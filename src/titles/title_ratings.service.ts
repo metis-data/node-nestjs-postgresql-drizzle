@@ -14,6 +14,8 @@ export class TitleRatingsService {
   }
 
   getBestMoviesIndexed() {
-    return [];
+    return this.drizzle.db.select()
+      .from(titleRatingsIndexed)
+      .where(eq(titleRatingsIndexed.averageRating, "10.0"));
   }
 }
