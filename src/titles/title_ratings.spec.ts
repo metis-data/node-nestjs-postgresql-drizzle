@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
+import { startMetisInstrumentation, shudownhook } from '../tracer';
 
 describe('AppController (e2e)', function() {
   let app: INestApplication;
@@ -28,6 +29,8 @@ describe('AppController (e2e)', function() {
       imports: [AppModule],
     }).compile();
 
+    startMetisInstrumentation();
+
     app = moduleFixture.createNestApplication();
     await app.init();
   });
@@ -40,5 +43,6 @@ describe('AppController (e2e)', function() {
 
   afterAll(async function() {
     await app.close();
+    await shudownhook();
   });
 });
