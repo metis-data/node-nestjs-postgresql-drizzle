@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  api:
+    build: .
+    network_mode: "host"
+    image: node-nestjs-postgresql-prisma
+    container_name: node-nestjs-postgresql-prisma
