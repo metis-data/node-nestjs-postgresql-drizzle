@@ -1,20 +1,21 @@
 
 import { Injectable } from '@nestjs/common';
-import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as postgres from 'postgres';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Client } from 'pg';
 import { promises as fsPromises } from 'fs';
 import { sql } from 'drizzle-orm' 
 
 @Injectable()
 export class DrizzleService {
-  db: PostgresJsDatabase;
+  db: NodePgDatabase;
 
   constructor() {
   }
 
   async onModuleInit() {
     const connectionString = process.env['DATABASE_URL'];
-    const client = postgres(connectionString);
+    const client = new Client({ connectionString });
+    await client.connect();
     this.db = drizzle(client);
 
     await this.migrate();
