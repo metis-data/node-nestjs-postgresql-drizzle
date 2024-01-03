@@ -14,7 +14,7 @@ export class TitlesService {
       .where(like(titleBasic.primaryTitle, `%${title}%`));
   }
 
-  titlesForAnActor(nconst: string) {
+  titlesForAnActor(nconst: string, method: string) {
     const titlesForAnActorNaive = () => {
       return this.drizzle.db.select()
       .from(titleBasic)
@@ -28,7 +28,7 @@ export class TitlesService {
     return titlesForAnActorNaive();
   }
 
-  highestRatedMoviesForAnActor(nconst: string) {
+  highestRatedMoviesForAnActor(nconst: string, method: string) {
     const highestRatedMoviesForAnActorNaive = () => {
       return this.drizzle.db.select()
       .from(titleBasic)
@@ -43,7 +43,7 @@ export class TitlesService {
     return highestRatedMoviesForAnActorNaive();
   }
 
-  highestRatedMovies(numberOfVotes: number) {    
+  highestRatedMovies(numberOfVotes: number, method: string) {    
     const highestRatedMoviesNaive = () => {
       return this.drizzle.db.select()
       .from(titleBasic)
@@ -56,7 +56,7 @@ export class TitlesService {
     return highestRatedMoviesNaive();
   }
 
-  commonMoviesForTwoActors(actor1: string, actor2: string) {
+  commonMoviesForTwoActors(actor1: string, actor2: string, method: string) {
     const commonMoviesForTwoActorsNaive = () => {
       const titlePrincipals2 = alias(titlePrincipal, 'title_principals2');
 
@@ -71,7 +71,7 @@ export class TitlesService {
     return commonMoviesForTwoActorsNaive();
   }
 
-  crewOfGivenMovie(tconst: string) {
+  crewOfGivenMovie(tconst: string, method: string) {
     const crewOfGivenMovieInAppCode = () => {
       const crewViaTitlePrincipals = this.drizzle.db.select()
       .from(titlePrincipal)
@@ -97,7 +97,7 @@ export class TitlesService {
     return crewOfGivenMovieInAppCode();
   }
 
-  mostProlificActorInPeriod(startYear: number, endYear: number) {
+  mostProlificActorInPeriod(startYear: number, endYear: number, method: string) {
     const mostProlificActorInPeriodManualOptimized = () => {
       return this.drizzle.db.execute(sql`
         WITH best_actor AS (
@@ -118,7 +118,7 @@ export class TitlesService {
     return mostProlificActorInPeriodManualOptimized();
   }
 
-  mostProlificActorInGenre(genre: string) {
+  mostProlificActorInGenre(genre: string, method: string) {
     const mostProlificActorInGenreManual = () => {
       return this.drizzle.db.execute(sql`
         WITH best_actors AS (
@@ -140,7 +140,7 @@ export class TitlesService {
     return mostProlificActorInGenreManual();
   }
 
-  mostCommonTeammates(nconst: string) {
+  mostCommonTeammates(nconst: string, method: string) {
     const mostCommonTeammatesInApp = () => {
       const titlesPrincipalMatchingPerson = this.drizzle.db.select()
       .from(titlePrincipal)

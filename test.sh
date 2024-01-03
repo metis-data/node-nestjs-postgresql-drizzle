@@ -1,2 +1,4 @@
 npm install
-npm run test
+MOCK_CONTAINER_DEPENDENCIES=true \
+    DEBUG=testcontainers* \
+    npm run test

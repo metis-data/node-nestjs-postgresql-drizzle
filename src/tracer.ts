@@ -1,63 +1,24 @@
-import opentelemetry from '@opentelemetry/api';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import {
-  BasicTracerProvider,
-  BatchSpanProcessor,
-  ConsoleSpanExporter,
-  SimpleSpanProcessor,
-} from '@opentelemetry/sdk-trace-base';
-import {
-  getMetisExporter,
-  MetisHttpInstrumentation,
-  MetisPgInstrumentation,
-  getResource,
-} from '@metis-data/pg-interceptor';
-import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
+const opentelemetry = require('@opentelemetry/sdk-node');
+const {
+  getNodeAutoInstrumentations,
+} = require('@opentelemetry/auto-instrumentations-node');
+const {
+  SemanticResourceAttributes,
+} = require('@opentelemetry/semantic-conventions');
+const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-http');
+const { Resource } = require('@opentelemetry/resources');
 
-let metisExporter; 
-let tracerProvider;
-
-const connectionString = process.env.DATABASE_URL;
-
-export const shudownhook = async () => {
-  console.log('Shutting down tracer provider and exporter...');
-  await tracerProvider?.shutdown();
-  await metisExporter?.shutdown();
-  console.log('Tracer provider and exporter were shut down.');
-}
-
-process.on('SIGINT', () => {
-  shudownhook().finally(() => process.exit(0));
-});
-process.on('SIGTERM', () => {
-  shudownhook().finally(() => process.exit(0));
-});
-
-export const startMetisInstrumentation = () => {
-  tracerProvider = new BasicTracerProvider({
-    resource: getResource(process.env.METIS_SERVICE_NAME, process.env.METIS_SERVICE_VERSION)
+export const startOtelInstrumentation = (otelCollectorPort) => {
+  const sdk = new opentelemetry.NodeSDK({
+    resource: new Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: 'sequelize',
+    }),
+    traceExporter: new OTLPTraceExporter({
+      url: 'http://127.0.0.1:' + otelCollectorPort + '/v1/traces',
+      compression: 'none',
+    }),
+    instrumentations: [getNodeAutoInstrumentations()],
   });
-
-  metisExporter = getMetisExporter(process.env.METIS_API_KEY);
-
-  tracerProvider.addSpanProcessor(new BatchSpanProcessor(metisExporter));
-
-  if (process.env.OTEL_DEBUG === "true") {
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
-  }
-
-  const contextManager = new AsyncHooksContextManager();
-
-  contextManager.enable();
-  opentelemetry.context.setGlobalContextManager(contextManager);
-
-  tracerProvider.register();
-
-  const excludeUrls = [/favicon.ico/];
-  registerInstrumentations({
-    instrumentations: [
-      new MetisPgInstrumentation({ connectionString }), 
-      new MetisHttpInstrumentation(excludeUrls)
-    ],
-  });
+  
+  sdk.start();
 };
